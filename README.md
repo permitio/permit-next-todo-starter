@@ -1,0 +1,1 @@
+This is a simple todo application that demonstrate the power of Permit.io in defining policy and permissions. To learn more visit: 
