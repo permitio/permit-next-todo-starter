@@ -1,0 +1,9 @@
+{
+    "name": "eslint-plugin-permit",
+    "version": "1.0.0",
+    "private": true,
+    "main": "index.js",
+    "peerDependencies": {
+        "eslint": "8.33.0"
+    }
+}
