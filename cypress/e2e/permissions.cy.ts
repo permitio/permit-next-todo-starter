@@ -1,9 +1,39 @@
+const addTask = (task: string) => {
+    cy.get('input[placeholder="Task"]').should('exist');
+    cy.get('[data-testid="AddIcon"]').should('exist').parent().should('be.disabled');
+    cy.get('input[placeholder="Task"]').type(task);
+    cy.get('[data-testid="AddIcon"]').should('exist').parent().should('not.be.disabled').click();
+    cy.get('input[placeholder="Task"]').clear();
+}
+
+const editTask = (originalTask: string, edited: string) => {
+    cy.contains(originalTask).should('exist').parent().click();
+    cy.get(`input[value="${originalTask}"]`).should('exist').clear().type(edited);
+    cy.get('[data-testid="SaveIcon"]').should('exist').parent().should('not.be.disabled').click();
+};
+
+const deleteTask = (task: string) => {
+    cy.contains(task).parent().parent().next().within(() => {
+        cy.get('[data-testid="DeleteIcon"]').should('exist').parent()
+            .should('not.be.disabled').click();
+    });
+};
+
+const markTask = (task: string) => {
+    cy.contains(task).parent().parent().prev().within(() => {
+        cy.get('input[type="checkbox"]')
+            .should('not.be.disabled').click();
+    });
+};
+
 describe('TODO e2e test', () => {
     it('Visit the app, check there are no tasks', () => {
         cy.visit('http://localhost:3000');
         cy.contains('Choose User');
         cy.get('input[placeholder="Task"]').should('not.exist');
     });
+
+
 
     it('Choose a viewer, check there are tasks and User cannot add or edit new tasks', () => {
         cy.visit('http://localhost:3000');
@@ -14,26 +44,26 @@ describe('TODO e2e test', () => {
         cy.contains('Learn Next.js').should('exist');
         
         // Try to fail in add task
-        cy.addTask('Learn Cypress');
+        addTask('Learn Cypress');
         cy.contains('forbidden').should('exist');
         cy.get('[data-testid="CloseIcon"]').parent().click();
         cy.contains('Learn Cypress').should('not.exist');
         
         // Try to fail in edit task
-        cy.editTask('Learn Next.js', 'Learn Cypress');
+        editTask('Learn Next.js', 'Learn Cypress');
         cy.contains('forbidden').should('exist');
         cy.get('[data-testid="CloseIcon"]').parent().click();
         cy.get('[data-testid="CancelIcon"]').parent().click();
         cy.contains('Learn Cypress').should('not.exist');
 
         // Try to fail in delete task
-        cy.deleteTask('Learn Next.js');
+        deleteTask('Learn Next.js');
         cy.contains('forbidden').should('exist');
         cy.contains('Learn Next.js').should('exist');
         cy.get('[data-testid="CloseIcon"]').parent().click();
 
         // Try to mark task
-        cy.markTask('Learn Next.js');
+        markTask('Learn Next.js');
         cy.contains('forbidden').should('not.exist');
     });
 
@@ -46,23 +76,23 @@ describe('TODO e2e test', () => {
         cy.contains('Learn Next.js').should('exist');
         
         // Try to fail in add task
-        cy.addTask('Learn Cypress');
+        addTask('Learn Cypress');
         cy.contains('Learn Cypress').should('exist');
         
         // Try to edit task
-        cy.editTask('Learn Cypress', 'Do not Learn Cypress');
+        editTask('Learn Cypress', 'Do not Learn Cypress');
         cy.contains('forbidden').should('exist');
         cy.get('[data-testid="CloseIcon"]').parent().click();
         cy.get('[data-testid="CancelIcon"]').parent().click();
 
         // Try to fail in delete task
-        cy.deleteTask('Learn Cypress');
+        deleteTask('Learn Cypress');
         cy.contains('forbidden').should('exist');
         cy.contains('Learn Next.js').should('exist');
         cy.get('[data-testid="CloseIcon"]').parent().click();
 
         // Try to mark task
-        cy.markTask('Learn Next.js');
+        markTask('Learn Next.js');
         cy.contains('forbidden').should('exist');
     });
 
@@ -75,23 +105,23 @@ describe('TODO e2e test', () => {
         cy.contains('Learn Next.js').should('exist');
         
         // Try to fail in add task
-        cy.addTask('Learn Cypress and Next.js');
+        addTask('Learn Cypress and Next.js');
         cy.contains('forbidden').should('exist');
         cy.get('[data-testid="CloseIcon"]').parent().click();
         cy.contains('Learn Cypress and Next.js').should('not.exist');
         
         // Try to edit task
-        cy.editTask('Learn Cypress', 'Learn Cypress and Next.js');
+        editTask('Learn Cypress', 'Learn Cypress and Next.js');
         cy.contains('Learn Cypress and Next.js').should('exist');
         
         // Try to fail in delete task
-        cy.deleteTask('Learn Cypress and Next.js');
+        deleteTask('Learn Cypress and Next.js');
         cy.contains('forbidden').should('exist');
         cy.contains('Learn Cypress').should('exist');
         cy.get('[data-testid="CloseIcon"]').parent().click();
 
         // Try to mark task
-        cy.markTask('Learn Next.js');
+        markTask('Learn Next.js');
         cy.contains('forbidden').should('exist');
     });
 
@@ -104,21 +134,21 @@ describe('TODO e2e test', () => {
         cy.contains('Learn Next.js').should('exist');
         
         // Try to in add task
-        cy.addTask('Learn Cypress and Next.js and React');
+        addTask('Learn Cypress and Next.js and React');
         cy.contains('Learn Cypress and Next.js and React').should('exist');
         
         // Try to edit task
-        cy.editTask('Learn Cypress and Next.js and React', 'Learn Cypress and Next.js and React and TypeScript');
+        editTask('Learn Cypress and Next.js and React', 'Learn Cypress and Next.js and React and TypeScript');
         cy.contains('Learn Cypress and Next.js and React and TypeScript').should('exist');
         
         // Try to fail in delete task
-        cy.deleteTask('Learn Cypress and Next.js and React and TypeScript');
+        deleteTask('Learn Cypress and Next.js and React and TypeScript');
         cy.contains('Learn Cypress and Next.js and React and TypeScript').should('not.exist');
-        cy.deleteTask('Learn Cypress and Next.js');
+        deleteTask('Learn Cypress and Next.js');
         cy.contains('Learn Cypress and Next.js').should('not.exist');
 
         // Try to mark task
-        cy.markTask('Learn Next.js');
+        markTask('Learn Next.js');
         cy.contains('forbidden').should('not.exist');
     });
 });
