@@ -7,10 +7,18 @@ const permit = new Permit({
     token: process.env.PERMIT_SDK_TOKEN,
 });
 
+type Response = {
+    message: string,
+}
+
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse<UserRead | UserRead[] | Response>
 ) {
-    const users = await permit.api.listUsers();
-    res.status(200).json(users);
+    try {
+        const users = await permit.api.listUsers();
+        res.status(200).json(users);
+    } catch (e) {
+        res.status(403).json({ message: 'Route not found' });
+    }
 }

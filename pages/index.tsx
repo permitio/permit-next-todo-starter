@@ -12,7 +12,7 @@ const styles = {
   }
 };
 
-const api = async (user: string, method: string, body: any = {}, query: string = '') => {
+const api = async (user: string = 'user', method: string, body: any = {}, query: string = '') => {
   const req: RequestInit = {
     method,
     headers: {
@@ -55,7 +55,6 @@ export default function Home() {
   }, [processing]);
 
   useEffect(() => {
-    if (!user) return;
     api(user, 'GET', {})
       .then((data) => (setTasks(data)))
       .catch((err) => (setError(err.message)));
@@ -159,7 +158,7 @@ export default function Home() {
                   label="Choose User"
                   onChange={({ target: { value } }) => (setUser(value))}
                 >
-                  {users.map((user) => (
+                  {users.map && users.map((user) => (
                     <MenuItem key={user.key} value={user.key}>{user.first_name} {user.last_name}</MenuItem>
                   ))}
                 </Select>
