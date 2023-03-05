@@ -2,7 +2,6 @@ import { Fragment, useCallback, useEffect, useState } from 'react'
 import { Task } from './api/tasks'
 import { Grid, Checkbox, IconButton, Input, List, ListItem, ListItemButton, ListItemText, Paper, InputAdornment, Alert, FormControl, InputLabel, Select, MenuItem } from '@mui/material'
 import { Add, Cancel,Delete, Save } from '@mui/icons-material'
-import { UserRead } from 'permitio/build/main/openapi'
 
 const styles = {
   Paper: {
@@ -12,12 +11,11 @@ const styles = {
   }
 };
 
-const api = async (user: string, method: string, body: any = {}, query: string = '') => {
+const api = async (method: string, body: any = {}, query: string = '') => {
   const req: RequestInit = {
     method,
     headers: {
       'Content-Type': 'application/json',
-      user
     },
   };
   if (method !== 'GET') {
@@ -38,15 +36,7 @@ export default function Home() {
   const [processing, setProcessing] = useState<boolean>(false);
   const [edit, setEdit] = useState<number | null>(null);
   const [editedTask, setEditedTask] = useState<Task | null>(null);
-  const [users, setUsers] = useState<UserRead[]>([]);
-  const [user, setUser] = useState<string>('');
 
-  useEffect(() => {
-    fetch('/api/users')
-      .then((res) => res.json())
-      .then((data) => (setUsers(data)))
-      .catch((err) => (setError(err.message)));
-  }, []);
 
   useEffect(() => {
     if (processing) {
@@ -55,11 +45,10 @@ export default function Home() {
   }, [processing]);
 
   useEffect(() => {
-    if (!user) return;
-    api(user, 'GET', {})
+    api('GET', {})
       .then((data) => (setTasks(data)))
       .catch((err) => (setError(err.message)));
-  }, [user]);
+  }, []);
 
   const cancelEditTask = useCallback(() => {
     setEdit(null);
@@ -71,7 +60,7 @@ export default function Home() {
     setProcessing(true);
     setError('');
     try {
-      const data = await api(user, 'POST', {
+      const data = await api('POST', {
         text: newTask,
         isCompleted: false
       });
@@ -82,14 +71,14 @@ export default function Home() {
     } finally {
       setProcessing(false);
     }
-  }, [newTask, user]);
+  }, [newTask]);
 
   const updateTask = useCallback(async () => {
     if (edit === null) return;
     setProcessing(true);
     setError('');
     try {
-      const data = await api(user, 'PUT', {
+      const data = await api('PUT', {
         ...editedTask
       }, `?id=${edit.toString()}`);
       setTasks((t) => {
@@ -104,7 +93,7 @@ export default function Home() {
     } finally {
       setProcessing(false);
     }
-  }, [edit, editedTask, user]);
+  }, [edit, editedTask]);
 
   const deleteTask = useCallback(async (idx: number) => {
     setProcessing(true);
@@ -112,7 +101,7 @@ export default function Home() {
     setEdit(null);
     setEditedTask(null);
     try {
-      await api(user, 'DELETE', {}, `?id=${idx.toString()}`);
+      await api('DELETE', {}, `?id=${idx.toString()}`);
       const newTasks = [...tasks];
       newTasks.splice(idx, 1);
       setTasks(newTasks);
@@ -121,13 +110,13 @@ export default function Home() {
     } finally {
       setProcessing(false);
     }
-  }, [tasks, user]);
+  }, [tasks]);
 
   const toggleTask = useCallback(async (idx: number) => {
     setProcessing(true);
     setError('');
     try {
-      const data = await api(user, 'PATCH', {
+      const data = await api('PATCH', {
         isCompleted: !tasks[idx].isCompleted
       }, `?id=${idx.toString()}`);
       const newTasks = [...tasks];
@@ -138,7 +127,7 @@ export default function Home() {
     } finally {
       setProcessing(false);
     }
-  }, [tasks, user]);
+  }, [tasks]);
 
   return (
     <>
@@ -149,24 +138,7 @@ export default function Home() {
               <Alert severity='error' onClose={() => (setError(''))}>{error}</Alert>
             </Paper>
           }
-          {users.length !== 0 && <Grid item xs={12}>
-            <Paper style={styles.Paper}>
-              <FormControl fullWidth>
-                <InputLabel id="user-select-label">Choose User</InputLabel>
-                <Select
-                  labelId="user-select-label"
-                  value={user}
-                  label="Choose User"
-                  onChange={({ target: { value } }) => (setUser(value))}
-                >
-                  {users.map((user) => (
-                    <MenuItem key={user.key} value={user.key}>{user.first_name} {user.last_name}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Paper>
-          </Grid>}
-          {user && <Grid item xs={12}>
+          {<Grid item xs={12}>
             <Paper style={styles.Paper}>
               <form onSubmit={(e) => { e.preventDefault(); addTask(); }}>
                 <Input fullWidth placeholder="Task" value={newTask} onChange={({ target: { value } }) => (setNewTask(value))} endAdornment={
