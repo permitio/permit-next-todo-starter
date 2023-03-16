@@ -11,11 +11,19 @@ const styles = {
   }
 };
 
+const JWTs = {
+  'admin': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsIm5hbWUiOiJQYWlkIERvZSIsImlhdCI6MTUxNjIzOTAyMiwicGFpZCI6ZmFsc2UsInJvbGUiOiJhZG1pbiJ9.sKaqInlud7nsMyFGdzhU1D6wWYoh1SZAjKbdeg0LqvU',
+  'user': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyIiwibmFtZSI6IlBhaWQgRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJwYWlkIjpmYWxzZX0.I9bl6yk7An_jkc7Ji8R-mWqjSeDt9QMXnGrtoZj0XhY',
+  'paidUserOne': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQYWlkVXNlck9uZSIsIm5hbWUiOiJKb2huIERvZSIsImlhdCI6MTUxNjIzOTAyMiwicGFpZCI6dHJ1ZX0.oJNOUNInAUJ24FNnn1tza8QmSKBzqnKSwfJXzTMKAw4',
+  'paidUserTwo': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQYWlkVXNlclR3byIsIm5hbWUiOiJQYWlkIERvZSIsImlhdCI6MTUxNjIzOTAyMiwicGFpZCI6dHJ1ZX0.0WgzcPp0oH31DgRr0vXZsfBE41_YvC8Me6EdLLMUIfY',
+}
+
 const api = async (method: string, body: any = {}, query: string = '') => {
   const req: RequestInit = {
     method,
     headers: {
       'Content-Type': 'application/json',
+      user: JWTs['admin']
     },
   };
   if (method !== 'GET') {

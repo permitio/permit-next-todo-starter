@@ -1,8 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+
 export type Task = {
   text: string,
   isCompleted: boolean,
+  owner: string,
 }
 
 type Response = {
@@ -13,12 +15,15 @@ const tasks: Task[] = [
   {
     text: 'Learn Next.js',
     isCompleted: true,
+    owner: 'admin'
   }, {
     text: 'Learn React.js',
     isCompleted: false,
+    owner: 'admin'
   }, {
     text: 'Learn ReactNative',
     isCompleted: false,
+    owner: 'admin'
   },
 ];
 
@@ -55,9 +60,9 @@ export default async function handler(
       if (Number.isNaN(intId) || intId < 0 || intId >= tasks.length) {
         res.status(400).json({ message: 'invalid id' });
       }
-      const { text, isCompleted } = req.body;
-      tasks[intId] = { text, isCompleted };
-      res.status(200).json({ text, isCompleted });
+      const { text, isCompleted, owner } = req.body;
+      tasks[intId] = { text, isCompleted, owner };
+      res.status(200).json({ text, isCompleted, owner });
       break;
     }
 
