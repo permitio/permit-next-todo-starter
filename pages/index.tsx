@@ -1,8 +1,9 @@
-import { Fragment, useCallback, useEffect, useState } from 'react'
-import { Task } from './api/tasks'
-import { Grid, Checkbox, IconButton, Input, List, ListItem, ListItemButton, ListItemText, Paper, InputAdornment, Alert, FormControl, InputLabel, Select, MenuItem } from '@mui/material'
-import { Add, Cancel,Delete, Save } from '@mui/icons-material'
-import { UserRead } from 'permitio/build/main/openapi'
+import { Fragment, useCallback, useEffect, useState } from 'react';
+import { useUser } from '@auth0/nextjs-auth0/client';
+import { Task } from './api/tasks';
+import { Grid, Checkbox, IconButton, Input, List, ListItem, ListItemButton, ListItemText, Paper, InputAdornment, Alert, FormControl, InputLabel, Select, MenuItem, Button } from '@mui/material';
+import { Add, Cancel, Delete, Save } from '@mui/icons-material';
+import { UserRead } from 'permitio/build/main/openapi';
 
 const styles = {
   Paper: {
@@ -32,6 +33,7 @@ const api = async (user: string, method: string, body: any = {}, query: string =
 }
 
 export default function Home() {
+  const { user, isLoading } = useUser();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [error, setError] = useState<string>('');
   const [newTask, setNewTask] = useState<string>('');
@@ -39,24 +41,15 @@ export default function Home() {
   const [edit, setEdit] = useState<number | null>(null);
   const [editedTask, setEditedTask] = useState<Task | null>(null);
   const [users, setUsers] = useState<UserRead[]>([]);
-  const [user, setUser] = useState<string>('');
 
   useEffect(() => {
-    fetch('/api/users')
-      .then((res) => res.json())
-      .then((data) => (setUsers(data)))
-      .catch((err) => (setError(err.message)));
-  }, []);
-
-  useEffect(() => {
-    if (processing) {
+    if (processing || isLoading) {
       setError('');
     }
-  }, [processing]);
+  }, [processing, isLoading]);
 
   useEffect(() => {
-    if (!user) return;
-    api(user, 'GET', {})
+    api(user?.email || '', 'GET', {})
       .then((data) => (setTasks(data)))
       .catch((err) => (setError(err.message)));
   }, [user]);
@@ -71,7 +64,7 @@ export default function Home() {
     setProcessing(true);
     setError('');
     try {
-      const data = await api(user, 'POST', {
+      const data = await api(user?.email || '', 'POST', {
         text: newTask,
         isCompleted: false
       });
@@ -89,7 +82,7 @@ export default function Home() {
     setProcessing(true);
     setError('');
     try {
-      const data = await api(user, 'PUT', {
+      const data = await api(user?.email || '', 'PUT', {
         ...editedTask
       }, `?id=${edit.toString()}`);
       setTasks((t) => {
@@ -112,7 +105,7 @@ export default function Home() {
     setEdit(null);
     setEditedTask(null);
     try {
-      await api(user, 'DELETE', {}, `?id=${idx.toString()}`);
+      await api(user?.email || '', 'DELETE', {}, `?id=${idx.toString()}`);
       const newTasks = [...tasks];
       newTasks.splice(idx, 1);
       setTasks(newTasks);
@@ -127,7 +120,7 @@ export default function Home() {
     setProcessing(true);
     setError('');
     try {
-      const data = await api(user, 'PATCH', {
+      const data = await api(user?.email || '', 'PATCH', {
         isCompleted: !tasks[idx].isCompleted
       }, `?id=${idx.toString()}`);
       const newTasks = [...tasks];
@@ -149,23 +142,12 @@ export default function Home() {
               <Alert severity='error' onClose={() => (setError(''))}>{error}</Alert>
             </Paper>
           }
-          {users.length !== 0 && <Grid item xs={12}>
+          {!user && <Grid item xs={12}>
             <Paper style={styles.Paper}>
-              <FormControl fullWidth>
-                <InputLabel id="user-select-label">Choose User</InputLabel>
-                <Select
-                  labelId="user-select-label"
-                  value={user}
-                  label="Choose User"
-                  onChange={({ target: { value } }) => (setUser(value))}
-                >
-                  {users.map((user) => (
-                    <MenuItem key={user.key} value={user.key}>{user.first_name} {user.last_name}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <Button href='/api/auth/login' variant='contained' fullWidth>Login</Button>
             </Paper>
-          </Grid>}
+          </Grid>
+          }
           {user && <Grid item xs={12}>
             <Paper style={styles.Paper}>
               <form onSubmit={(e) => { e.preventDefault(); addTask(); }}>
@@ -222,6 +204,10 @@ export default function Home() {
               </List>
             </Paper>
           </Grid>
+          }
+          {user && <Paper style={styles.Paper}>
+            <Button href='/api/auth/logout' variant="outlined" fullWidth>Logout</Button>
+          </Paper>
           }
         </Grid>
       </Fragment>

@@ -1,11 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { Permit } from 'permitio';
+import { withApiAuthRequired, getSession } from '@auth0/nextjs-auth0';
 
-const permit = new Permit({
-  pdp: "http://localhost:7766",
-  token: process.env.PERMIT_SDK_TOKEN,
-});
 
 export type Task = {
   text: string,
@@ -29,19 +25,13 @@ const tasks: Task[] = [
   },
 ];
 
-export default async function handler(
+export default withApiAuthRequired(async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Task | Task[] | Response>
 ) {
-  const { user } = req.headers;
-  if (!user) {
+  const session = await getSession(req, res);
+  if (!session?.user) {
     res.status(401).json({ message: 'unauthorized' });
-    return;
-  }
-
-  const isAllowedForOperation = await permit.check(user as string, req.method?.toLowerCase() as string, 'Task');
-  if (!isAllowedForOperation) {
-    res.status(403).json({ message: 'forbidden' });
     return;
   }
 
@@ -82,4 +72,4 @@ export default async function handler(
     tasks[intId] = { ...tasks[intId], isCompleted };
     res.status(200).json({ ...tasks[intId] });
   }
-}
+})
