@@ -23,6 +23,7 @@ export async function getServerSideProps({ req, res }: any) {
     }
     const permitUser = await permit.api.syncUser(permitUserObj);
     // check if user has roles
+    // Add roles to user session with this guide: https://auth0.com/docs/manage-users/access-control/sample-use-cases-rules-with-authorization#add-user-roles-to-tokens
     if (session?.user['my_app_name/roles']) {
         session?.user['my_app_name/roles'].map(async (roleKey: string) => {
             console.log(roleKey);
