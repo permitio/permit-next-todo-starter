@@ -1,6 +1,14 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { withApiAuthRequired, getSession } from '@auth0/nextjs-auth0';
+import { Permit } from 'permitio';
+
+export const permit = new Permit({
+  pdp: 'https://cloudpdp.api.permit.io',
+  token: process.env.PERMIT_SDK_TOKEN,
+});
+
+
 
 
 export type Task = {
@@ -32,6 +40,15 @@ export default withApiAuthRequired(async function handler(
   const session = await getSession(req, res);
   if (!session?.user) {
     res.status(401).json({ message: 'unauthorized' });
+    return;
+  }
+  const isAllowedForOperation = await permit.check(
+    session?.user?.sub as string || '',
+    req.method?.toLowerCase() as string,
+    'task'
+  );
+  if (!isAllowedForOperation) {
+    res.status(403).json({ message: 'forbidden' });
     return;
   }
 
