@@ -1,10 +1,18 @@
 // middleware.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { Permit } from 'permitio';
-
+import fetchAdapter from '@vespaiach/axios-fetch-adapter'
+import axios, { AxiosInstance } from 'axios'
+const axiosInstance: AxiosInstance = axios.create({
+  adapter: fetchAdapter
+})
 const permit = new Permit({
   pdp: 'http://localhost:7766',
   token: process.env.PERMIT_SDK_TOKEN,
+  axiosInstance,
+  log: {
+    level: 'debug',
+  },
 });
 
 export default async function middleware(req: NextRequest) {
