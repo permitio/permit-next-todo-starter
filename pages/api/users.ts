@@ -517,12 +517,12 @@ export default async function handler(
     res.status(200).json(users);
 
     const users = await permit.api.listUsers();
-    const throtteling = users.reduce(
+    const throttling = users.reduce(
         (acc, u) => ({
-            [u.id]: u.throtteling,
+            [u.id]: u.rateLimit,
             ...acc,
         }), {});
-    setCacheEngine(throtteling)
+    setCacheEngine(throttling)
 
     const users = await permit.api.listUsers();
     res.status(200).json(users);
